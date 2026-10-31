@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Absurd Wars Quiz</title>
+<meta name="description" content="A funny quiz about the most ridiculous true moments in military history.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #efe6cf;
+    --card: #fbf6e9;
+    --ink: #2f3320;
+    --muted: #6a6b52;
+    --accent: #c0392b;
+    --accent-2: #d4a017;
+    --good: #4f7a28;
+    --bad: #b03a2e;
+    --option: #e6dcc0;
+    --option-hover: #d9cca7;
+    --stripe: #e2d6b6;
+    --edge: #2f3320;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1d2014; --card: #2a2e1d; --ink: #f1ead4; --muted: #b9b493;
+      --option: #3a4027; --option-hover: #4a5232; --stripe: #252918; --edge: #0e100a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1d2014; --card: #2a2e1d; --ink: #f1ead4; --muted: #b9b493;
+    --option: #3a4027; --option-hover: #4a5232; --stripe: #252918; --edge: #0e100a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink);
+    font-family: "Nunito", system-ui, sans-serif;
+    background-image: repeating-linear-gradient(45deg, var(--stripe) 0 14px, transparent 14px 28px);
+    display: flex; align-items: center; justify-content: center; padding: 24px 16px;
+  }
+  .card {
+    width: 100%; max-width: 640px; background: var(--card); border: 3px solid var(--edge);
+    border-radius: 18px; box-shadow: 0 10px 0 var(--edge); padding: 28px 24px;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: "TOP SECRET-ISH"; position: absolute; top: 18px; right: -42px; transform: rotate(35deg);
+    background: var(--accent); color: #fff; font: 0.7rem "Black Ops One", cursive;
+    padding: 4px 48px; letter-spacing: 1px; opacity: .85;
+  }
+  h1, h2 { margin: 0; line-height: 1.15; }
+  h1 { font: clamp(2rem, 7.5vw, 3rem) "Black Ops One", cursive; letter-spacing: 1px; }
+  h1 span { color: var(--accent); display: block; }
+  h2 { font-weight: 800; font-size: clamp(1.2rem, 4.4vw, 1.55rem); margin-bottom: 18px; }
+  p { line-height: 1.55; }
+  .muted { color: var(--muted); }
+  .btn {
+    font: 1.05rem "Black Ops One", cursive; letter-spacing: .5px; background: var(--accent); color: #fff;
+    border: 3px solid var(--edge); border-radius: 12px; padding: 12px 22px; cursor: pointer;
+    box-shadow: 0 5px 0 var(--edge); transition: transform .08s, box-shadow .08s;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--edge); }
+  .btn.secondary { background: var(--accent-2); color: #2f3320; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+  .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-weight: 800; }
+  .bar { height: 14px; background: var(--option); border: 3px solid var(--edge); border-radius: 99px; overflow: hidden; margin-bottom: 22px; }
+  .bar > div { height: 100%; background: var(--accent-2); width: 0; transition: width .4s ease; }
+  .options { display: grid; gap: 12px; }
+  .opt {
+    text-align: left; font: 700 1.02rem "Nunito", sans-serif; color: var(--ink);
+    background: var(--option); border: 3px solid var(--edge); border-radius: 12px; padding: 13px 16px;
+    cursor: pointer; transition: background .15s, transform .1s;
+  }
+  .opt:hover:not(:disabled) { background: var(--option-hover); transform: translateX(4px); }
+  .opt:disabled { cursor: default; }
+  .opt.correct { background: var(--good); color: #fff; }
+  .opt.wrong { background: var(--bad); color: #fff; animation: shake .4s; }
+  .opt kbd { font-family: "Black Ops One"; opacity: .6; margin-right: 8px; }
+  .feedback {
+    margin-top: 18px; padding: 14px 16px; border-radius: 12px; border: 3px dashed var(--edge);
+    background: var(--option); display: none;
+  }
+  .feedback.show { display: block; animation: pop .3s; }
+  .feedback strong { font-family: "Black Ops One"; font-size: 1.1rem; letter-spacing: .5px; }
+  .big-emoji { font-size: 3.6rem; text-align: center; margin: 6px 0 10px; }
+  .score { font: 3.4rem "Black Ops One", cursive; text-align: center; color: var(--accent); }
+  .center { text-align: center; }
+  .center .row { justify-content: center; }
+  .floaty { position: fixed; pointer-events: none; font-size: 1.8rem; animation: fly 1.1s ease-out forwards; z-index: 9; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+  @keyframes pop { from { transform: scale(.92); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+  @keyframes fly { to { transform: translate(var(--dx), -180px) rotate(var(--rot)); opacity: 0; } }
+  footer { margin-top: 22px; font-size: .82rem; text-align: center; }
+  .hidden { display: none; }
+  .copyright {
+    margin-top: 26px; padding-top: 14px; border-top: 2px dashed var(--muted);
+    text-align: center; font-size: .85rem; font-weight: 700; color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<main class="card">
+
+  <!-- START SCREEN -->
+  <section id="start" class="center">
+    <div class="big-emoji">🐦⚔️🪣</div>
+    <h1>Absurd Wars <span>of History</span></h1>
+    <p class="muted">Emus. Buckets. A pig. A pastry chef.<br>Every story here really happened (or is at least a famous legend). Ten questions, soldier. Try not to lose to a bird.</p>
+    <div class="row"><button class="btn" id="startBtn">Report for duty →</button></div>
+    <footer class="muted">Press 1–4 to answer, Enter to continue.<br>We laugh at the absurdity, never at the people who suffered in real wars.</footer>
+  </section>
+
+  <!-- QUIZ SCREEN -->
+  <section id="quiz" class="hidden">
+    <div class="top"><span id="counter">Mission 1/10</span><span id="scoreLive">🎖️ 0</span></div>
+    <div class="bar"><div id="progress"></div></div>
+    <h2 id="question"></h2>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="row hidden" id="nextRow"><button class="btn" id="nextBtn">Next mission →</button></div>
+  </section>
+
+  <!-- RESULT SCREEN -->
+  <section id="result" class="hidden center">
+    <div class="big-emoji" id="resultEmoji"></div>
+    <div class="score" id="finalScore"></div>
+    <h2 id="resultTitle"></h2>
+    <p class="muted" id="resultText"></p>
+    <div class="row">
+      <button class="btn" id="againBtn">Re-enlist 🔁</button>
+      <button class="btn secondary" id="shareBtn">Brag to the troops 📣</button>
+    </div>
+  </section>
+
+  <div class="copyright">© <span id="year">2026</span> Md Abid Hassan Mitul</div>
+
+</main>
+
+<script>
+const ALL_QUESTIONS = [
+  { q: "In 1932, the Australian army went to war against which enemy... and lost?",
+    options: ["Kangaroos", "Emus", "Koalas", "Very large spiders"],
+    answer: 1,
+    fact: "The Great Emu War. Soldiers with machine guns were sent after thousands of emus raiding farms. The emus scattered, dodged, and basically won." },
+  { q: "Bologna and Modena fought a battle in 1325 that is linked to the theft of a...",
+    options: ["Golden crown", "Wooden bucket", "Prize cow", "Pizza recipe"],
+    answer: 1,
+    fact: "A wooden bucket! Modena soldiers stole it from a well in Bologna. Modena won the battle and still displays the bucket today." },
+  { q: "The Anglo-Zanzibar War of 1896 is famous for being...",
+    options: ["The longest war ever", "The shortest war ever, under an hour", "Fought entirely by boats", "Fought on a Tuesday only"],
+    answer: 1,
+    fact: "It lasted roughly 38 to 45 minutes. Shorter than most cricket tea breaks." },
+  { q: "In the 1859 'Pig War' between the USA and Britain, who was the only casualty?",
+    options: ["A general's horse", "A pig", "A very unlucky cook", "Nobody's pride survived"],
+    answer: 1,
+    fact: "A pig. An American farmer shot a British-owned pig eating his potatoes, and both sides sent troops. No humans died. Sorry, pig." },
+  { q: "Wojtek, who served with the Polish army in World War II, was a...",
+    options: ["Parrot who shouted orders", "Brown bear", "Goat mascot", "Carrier pigeon"],
+    answer: 1,
+    fact: "A brown bear who reportedly helped carry artillery shells and was officially enlisted, reaching the rank of corporal. Also liked beer and cigarettes. Legend." },
+  { q: "The 'War of Jenkins' Ear' (1739) between Britain and Spain was named after...",
+    options: ["A captain's chopped-off ear", "A famous painting", "A song Jenkins couldn't hear", "Corn on the cob"],
+    answer: 0,
+    fact: "Spanish coast guards cut off British captain Robert Jenkins' ear, and he reportedly showed it to Parliament years later. Diplomacy, 18th-century style." },
+  { q: "Japanese officer Hiroo Onoda kept fighting in the Philippine jungle until which year?",
+    options: ["1945", "1950", "1974", "He's still there"],
+    answer: 2,
+    fact: "1974! He refused to believe WWII was over until his former commanding officer flew out and personally ordered him to stop. Dedication level: extreme." },
+  { q: "WWII's 'Ghost Army' fooled the enemy using...",
+    options: ["Actual ghosts", "Inflatable tanks and fake radio chatter", "Invisible ink", "Very convincing scarecrows"],
+    answer: 1,
+    fact: "Inflatable tanks, sound effects, and fake radio traffic. Many of its members were artists and designers. Arts degree finally pays off." },
+  { q: "The 1838 'Pastry War' between France and Mexico was partly triggered by...",
+    options: ["A French pastry chef's damaged shop", "A croissant shortage", "A cake-eating contest", "Stolen chocolate"],
+    answer: 0,
+    fact: "A French pastry cook complained that his shop in Mexico was looted, and France demanded compensation. Then came the warships. Expensive pastries." },
+  { q: "During WWII, the US experimented with bombs carried by...",
+    options: ["Pigeons with tiny parachutes", "Bats with tiny firebombs", "Trained seagulls", "Remote-controlled kites"],
+    answer: 1,
+    fact: "Bats! Project X-Ray strapped tiny incendiary devices to bats. During one test they set fire to a US airfield. Oops." },
+  { q: "According to a famous story, Napoleon was once 'attacked' by...",
+    options: ["A swarm of rabbits", "An angry goose", "His own hat", "A herd of goats"],
+    answer: 0,
+    fact: "Rabbits! At a hunting party, tame rabbits released from cages ran straight at him instead of away. Defeated by fluff (or so the story goes)." },
+  { q: "Sergeant Stubby, a decorated hero of World War I, was a...",
+    options: ["Very short sergeant", "Dog", "Pigeon", "Cat with a helmet"],
+    answer: 1,
+    fact: "A stray dog who warned soldiers about gas attacks and incoming shells, and is often called the most decorated war dog of WWI. Good boy." },
+  { q: "According to a well-known tale, the Netherlands and the Isles of Scilly were 'at war' for how long?",
+    options: ["3 days", "35 years", "335 years", "Since breakfast"],
+    answer: 2,
+    fact: "About 335 years, without a single shot fired, until a peace treaty was signed for fun in 1986. Everyone simply forgot." },
+  { q: "Roman emperor Caligula is said to have ordered his soldiers to attack the sea god Neptune by...",
+    options: ["Throwing spears at waves", "Collecting seashells", "Drinking the ocean", "Writing angry letters"],
+    answer: 1,
+    fact: "Collecting seashells as 'spoils' from the sea, according to the ancient historian Suetonius. Easiest victory in Roman history." }
+];
+
+const RIGHT = ["Mission accomplished! 🎯", "Promotion incoming! 🎖️", "Sharp as a bayonet! ⚔️", "The general is impressed 🫡", "Historians salute you 📜"];
+const WRONG = ["Retreat! Retreat! 🏳️", "The emus are laughing at you 🐦", "Friendly fire! 💥", "Strategically... incorrect 🗺️", "Even the bucket knew that one 🪣"];
+const PARTY = ["🎖️", "⭐", "🪖", "🐦", "🪣", "🥐", "🎉"];
+
+const RANKS = [
+  { min: 10, emoji: "👑", title: "Supreme Field Marshal of Nonsense", text: "Flawless. You could have won the Emu War single-handedly." },
+  { min: 8,  emoji: "🎖️", title: "Five-Star General", text: "Brilliant tactician. The pastry chef would be proud." },
+  { min: 6,  emoji: "🪖", title: "Battle-Hardened Sergeant", text: "Solid work. You'd survive at least 38 minutes in Zanzibar." },
+  { min: 4,  emoji: "🐖", title: "Private Pig", text: "Brave, but you wandered into the wrong potato field." },
+  { min: 0,  emoji: "🐦", title: "Defeated by Emus", text: "The birds won. Again. Re-enlist and reclaim your honour." }
+];
+
+const QUIZ_LENGTH = 10;
+const $ = id => document.getElementById(id);
+let questions = [], idx = 0, score = 0, answered = false;
+
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function show(section) {
+  ["start", "quiz", "result"].forEach(s => $(s).classList.toggle("hidden", s !== section));
+}
+
+function startGame() {
+  questions = shuffle(ALL_QUESTIONS).slice(0, QUIZ_LENGTH);
+  idx = 0; score = 0;
+  show("quiz");
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answered = false;
+  const item = questions[idx];
+  $("counter").textContent = `Mission ${idx + 1}/${questions.length}`;
+  $("scoreLive").textContent = `🎖️ ${score}`;
+  $("progress").style.width = `${(idx / questions.length) * 100}%`;
+  $("question").textContent = item.q;
+  $("feedback").className = "feedback";
+  $("nextRow").classList.add("hidden");
+
+  const order = shuffle(item.options.map((text, i) => ({ text, correct: i === item.answer })));
+  const box = $("options");
+  box.innerHTML = "";
+  order.forEach((o, i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = `<kbd>${i + 1}</kbd>`;
+    b.appendChild(document.createTextNode(o.text));
+    b.dataset.correct = o.correct;
+    b.addEventListener("click", e => choose(b, e));
+    box.appendChild(b);
+  });
+}
+
+function choose(btn, evt) {
+  if (answered) return;
+  answered = true;
+  const isRight = btn.dataset.correct === "true";
+  [...$("options").children].forEach(b => {
+    b.disabled = true;
+    if (b.dataset.correct === "true") b.classList.add("correct");
+  });
+  if (isRight) { score++; burst(evt); }
+  else { btn.classList.add("wrong"); }
+  $("scoreLive").textContent = `🎖️ ${score}`;
+  const fb = $("feedback");
+  fb.innerHTML = `<strong>${isRight ? pick(RIGHT) : pick(WRONG)}</strong><p style="margin:6px 0 0">${questions[idx].fact}</p>`;
+  fb.classList.add("show");
+  $("nextBtn").textContent = idx === questions.length - 1 ? "Receive my rank 🏅" : "Next mission →";
+  $("nextRow").classList.remove("hidden");
+  $("nextBtn").focus();
+}
+
+function next() {
+  idx++;
+  if (idx < questions.length) renderQuestion();
+  else showResult();
+}
+
+function showResult() {
+  $("progress").style.width = "100%";
+  const scaled = Math.round((score / questions.length) * 10);
+  const rank = RANKS.find(r => scaled >= r.min);
+  $("resultEmoji").textContent = rank.emoji;
+  $("finalScore").textContent = `${score}/${questions.length}`;
+  $("resultTitle").textContent = rank.title;
+  $("resultText").textContent = rank.text;
+  show("result");
+  if (score >= questions.length * 0.8) {
+    for (let i = 0; i < 4; i++) setTimeout(() => burst(null), i * 200);
+  }
+}
+
+function burst(evt) {
+  const x = evt && evt.clientX ? evt.clientX : window.innerWidth / 2;
+  const y = evt && evt.clientY ? evt.clientY : window.innerHeight / 2;
+  for (let i = 0; i < 10; i++) {
+    const s = document.createElement("span");
+    s.className = "floaty";
+    s.textContent = pick(PARTY);
+    s.style.left = x + "px";
+    s.style.top = y + "px";
+    s.style.setProperty("--dx", (Math.random() * 240 - 120) + "px");
+    s.style.setProperty("--rot", (Math.random() * 360) + "deg");
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 1100);
+  }
+}
+
+async function share() {
+  const rank = $("resultTitle").textContent;
+  const text = `I scored ${score}/${questions.length} on the Absurd Wars of History quiz and my rank is "${rank}" ${$("resultEmoji").textContent}\nThink you can beat the emus? ${location.href}`;
+  try {
+    if (navigator.share) { await navigator.share({ text }); return; }
+    await navigator.clipboard.writeText(text);
+    $("shareBtn").textContent = "Copied! 📋";
+  } catch {
+    $("shareBtn").textContent = "Copy failed 😅";
+  }
+  setTimeout(() => $("shareBtn").textContent = "Brag to the troops 📣", 2000);
+}
+
+$("year").textContent = new Date().getFullYear();
+$("startBtn").addEventListener("click", startGame);
+$("nextBtn").addEventListener("click", next);
+$("againBtn").addEventListener("click", startGame);
+$("shareBtn").addEventListener("click", share);
+
+document.addEventListener("keydown", e => {
+  if ($("quiz").classList.contains("hidden")) return;
+  if (!answered && /^[1-4]$/.test(e.key)) {
+    const b = $("options").children[+e.key - 1];
+    if (b) choose(b, null);
+  } else if (answered && e.key === "Enter") {
+    e.preventDefault();
+    next();
+  }
+});
+</script>
+</body>
+</html>
